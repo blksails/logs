@@ -1,0 +1,13 @@
+[Unit]
+Description=blksails logs server
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+ExecStart=/root/logs/logs-linux-amd64
+WorkingDirectory=/root/logs/
+
+[Install]
+WantedBy=multi-user.target

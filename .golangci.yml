@@ -1,0 +1,92 @@
+linters:
+  enable:
+    - gofmt
+    - golint
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - ineffassign
+    - unconvert
+    - misspell
+    - gocyclo
+    - gosec
+    - prealloc
+    - nakedret
+    - exportloopref
+    - gocritic
+    - bodyclose
+    - gocognit
+    - godox
+    - funlen
+    - whitespace
+    - wsl
+    - goprintffuncname
+    - gomodguard
+    - asciicheck
+    - nolintlint
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  funlen:
+    lines: 100
+    statements: 50
+  gocognit:
+    min-complexity: 20
+  godox:
+    keywords:
+      - TODO
+      - BUG
+      - FIXME
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+  gomodguard:
+    blocked:
+      modules:
+        - github.com/golang/protobuf:
+            recommendations:
+              - google.golang.org/protobuf
+            reason: "migrate to google.golang.org/protobuf"
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - funlen
+        - gocognit
+    - path: \.pb\.go
+      linters:
+        - gocyclo
+        - funlen
+        - gocognit
+        - govet
+        - golint
+    - path: \.gen\.go
+      linters:
+        - gocyclo
+        - funlen
+        - gocognit
+        - govet
+        - golint
+
+run:
+  deadline: 5m
+  tests: true
+  skip-dirs:
+    - vendor/
+    - third_party/
+  skip-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.gen\\.go$"
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true

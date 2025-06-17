@@ -1,0 +1,46 @@
+# API 服务器配置
+server:
+  host: "0.0.0.0"
+  port: 8070
+
+# Schema 配置
+schema:
+  dir: "./schemas"
+  watch: true
+
+# 存储配置
+storage:
+  # PostgreSQL 配置
+  postgres:
+    host: "localhost"
+    port: 54322
+    user: "postgres"
+    password: "postgres"
+    database: "postgres"
+    sslmode: "disable"
+
+  # SQLite 配置
+  sqlite:
+    path: "./data/logs.db"
+
+  # ClickHouse 配置
+  clickhouse:
+    host: "localhost"
+    port: 9000
+    database: "logs"
+    user: "default"
+    password: ""
+
+  # MySQL 配置
+  mysql:
+    host: "localhost"
+    port: 3306
+    user: "root"
+    password: "root"
+    database: "logs"
+
+# 日志配置
+log:
+  level: "info"
+  format: "json"
+  output: "stdout"

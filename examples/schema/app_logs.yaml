@@ -1,0 +1,52 @@
+project: example
+table: app_logs
+description: Application logs with various field types
+
+fields:
+  - name: user_id
+    type: int
+    description: User ID
+    required: true
+    indexed: true
+
+  - name: action
+    type: string
+    description: User action
+    required: true
+    indexed: true
+
+  - name: duration
+    type: duration
+    description: Action duration
+    required: false
+    indexed: false
+
+  - name: timestamp
+    type: datetime
+    description: Event timestamp
+    required: true
+    indexed: true
+
+  - name: metadata
+    type: json
+    description: Additional metadata
+    required: false
+    indexed: false
+
+  - name: status_code
+    type: int
+    description: HTTP status code
+    required: false
+    indexed: true
+
+  - name: request_time
+    type: time
+    description: Request time
+    required: false
+    indexed: false
+
+  - name: response_size
+    type: int
+    description: Response size in bytes
+    required: false
+    indexed: false

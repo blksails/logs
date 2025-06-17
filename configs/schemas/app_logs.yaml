@@ -1,0 +1,68 @@
+project: "app"
+table: "logs"
+description: "应用程序日志"
+fields:
+  - name: "level"
+    type: "string"
+    description: "日志级别"
+    required: true
+    indexed: true
+
+  - name: "message"
+    type: "string"
+    description: "日志消息"
+    required: true
+
+  - name: "module"
+    type: "string"
+    description: "模块名称"
+    required: true
+    indexed: true
+
+  - name: "function"
+    type: "string"
+    description: "函数名称"
+    indexed: true
+
+  - name: "line"
+    type: "int"
+    description: "行号"
+
+  - name: "duration"
+    type: "duration"
+    description: "执行时间"
+    indexed: true
+
+  - name: "status_code"
+    type: "int"
+    description: "状态码"
+    indexed: true
+
+  - name: "request_id"
+    type: "string"
+    description: "请求 ID"
+    indexed: true
+
+  - name: "user_id"
+    type: "string"
+    description: "用户 ID"
+    indexed: true
+
+  - name: "ip"
+    type: "string"
+    description: "IP 地址"
+    indexed: true
+
+  - name: "user_agent"
+    type: "string"
+    description: "User Agent"
+
+  - name: "metadata"
+    type: "json"
+    description: "元数据"
+
+  - name: rest
+    type: rest
+    description: Additional fields
+    required: false
+    indexed: false

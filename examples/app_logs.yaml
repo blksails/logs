@@ -1,0 +1,163 @@
+project: myapp
+table: app_logs
+description: Application logs schema
+version: "1.0"
+fields:
+  - name: level
+    type: string
+    description: Log level
+    required: true
+    indexed: true
+
+  - name: time
+    type: datetime
+    description: Log timestamp
+    required: true
+    indexed: true
+
+  - name: message
+    type: string
+    description: Log message
+    required: true
+    indexed: false
+
+  - name: caller
+    type: string
+    description: Caller information
+    required: false
+    indexed: false
+
+  - name: stack_trace
+    type: string
+    description: Stack trace for error logs
+    required: false
+    indexed: false
+
+  - name: user_id
+    type: string
+    description: User ID
+    required: false
+    indexed: true
+
+  - name: request_id
+    type: string
+    description: Request ID for tracing
+    required: false
+    indexed: true
+
+  - name: method
+    type: string
+    description: HTTP method
+    required: false
+    indexed: true
+
+  - name: path
+    type: string
+    description: Request path
+    required: false
+    indexed: true
+
+  - name: status_code
+    type: int
+    description: HTTP status code
+    required: false
+    indexed: true
+
+  - name: duration_ms
+    type: float
+    description: Request duration in milliseconds
+    required: false
+    indexed: false
+
+  - name: ip_address
+    type: string
+    description: Client IP address
+    required: false
+    indexed: true
+
+  - name: user_agent
+    type: string
+    description: User agent string
+    required: false
+    indexed: false
+
+  - name: referer
+    type: string
+    description: HTTP referer
+    required: false
+    indexed: false
+
+  - name: params
+    type: object
+    description: Request parameters
+    required: false
+    indexed: false
+    fields:
+      - name: query
+        type: object
+        description: Query parameters
+        required: false
+        indexed: false
+      - name: body
+        type: object
+        description: Request body
+        required: false
+        indexed: false
+
+  - name: response
+    type: object
+    description: Response data
+    required: false
+    indexed: false
+    fields:
+      - name: body
+        type: object
+        description: Response body
+        required: false
+        indexed: false
+      - name: headers
+        type: object
+        description: Response headers
+        required: false
+        indexed: false
+
+  - name: error
+    type: object
+    description: Error information
+    required: false
+    indexed: false
+    fields:
+      - name: code
+        type: string
+        description: Error code
+        required: false
+        indexed: true
+      - name: message
+        type: string
+        description: Error message
+        required: false
+        indexed: false
+      - name: details
+        type: object
+        description: Additional error details
+        required: false
+        indexed: false
+
+  - name: tags
+    type: array
+    description: Custom tags
+    required: false
+    indexed: false
+    item_type: string
+
+  - name: metadata
+    type: object
+    description: Additional metadata
+    required: false
+    indexed: false
+
+  - name: rest
+    type: rest
+    description: Additional fields
+    required: false
+    indexed: false
