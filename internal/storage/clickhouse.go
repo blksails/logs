@@ -129,6 +129,9 @@ func (s *ClickHouseStorage) GetSchema(ctx context.Context, project, table string
 	if err == sql.ErrNoRows {
 		return nil, fmt.Errorf("schema not found")
 	}
+
+	fmt.Println("fieldsJSON string:", string(fieldsJSON)) // 会显示为真实的 JSON 字符串
+
 	if err != nil {
 		return nil, fmt.Errorf("查询 schema 失败: %w", err)
 	}
@@ -319,6 +322,14 @@ func (s *ClickHouseStorage) BatchInsertLogs(ctx context.Context, project, table 
 		return nil
 	}
 
+	// 打印日志的 JSON 格式（调试用）
+	logsJSON, err := json.MarshalIndent(logs, "", "  ")
+	if err != nil {
+		fmt.Println("Error marshalling logs:", err)
+		return err
+	}
+	fmt.Println("logs:", string(logsJSON))
+
 	// 获取 schema
 	schema, err := s.GetSchema(ctx, project, table)
 	if err != nil {
@@ -372,6 +383,85 @@ func (s *ClickHouseStorage) BatchInsertLogs(ctx context.Context, project, table 
 	}
 
 	return nil
+}
+
+//// BatchInsertLogs 批量插入日志
+//func (s *ClickHouseStorage) BatchInsertLogs(ctx context.Context, project, table string, logs []*models.LogEntry) error {
+//	if len(logs) == 0 {
+//		return nil
+//	}
+//
+//	// 打印日志的 JSON 格式（调试用）
+//	logsJSON, err := json.MarshalIndent(logs, "", "  ")
+//	if err != nil {
+//		fmt.Println("Error marshalling logs:", err)
+//		return err
+//	}
+//	fmt.Println("logs:", string(logsJSON))
+//
+//	// 使用事务批量插入
+//	tx, err := s.db.BeginTx(ctx, nil)
+//	if err != nil {
+//		return fmt.Errorf("开始事务失败: %w", err)
+//	}
+//	defer tx.Rollback()
+//
+//	// 构建表名
+//	tableName := fmt.Sprintf("logs_%s_%s", project, table)
+//
+//	// 准备插入的字段列表（即 logs 中的 key）
+//	var columns []string
+//	var allValues []interface{}
+//	var allPlaceholders []string
+//
+//	for _, log := range logs {
+//		// 从 log 的根级别提取 'level' 和 'message' 字段
+//		values := make([]interface{}, 0)
+//		placeholders := make([]string, 0)
+//
+//		// 根级字段 level 和 message
+//		columns = append(columns, "level", "message")
+//		values = append(values, log.Level, log.Message)
+//		placeholders = append(placeholders, "?", "?")
+//
+//		// 从 log.Fields 中提取出字段名（key）和值（value）
+//		for key, value := range log.Fields {
+//			columns = append(columns, key) // 将 key 作为列名
+//			values = append(values, value) // 将 value 作为值
+//			placeholders = append(placeholders, "?")
+//		}
+//
+//		// 准备一个占位符，并将其添加到查询中
+//		allPlaceholders = append(allPlaceholders, "("+strings.Join(placeholders, ", ")+")")
+//		allValues = append(allValues, values...)
+//	}
+//
+//	// 批量插入查询
+//	query := fmt.Sprintf("INSERT INTO %s (%s) VALUES %s",
+//		tableName,
+//		strings.Join(columns, ", "),
+//		strings.Join(allPlaceholders, ", "),
+//	)
+//
+//	// 打印最终的 SQL 查询（调试用）
+//	logrus.Info("Executing Query: ", query)
+//	fmt.Println("SQL Query: ", query)
+//
+//	// 执行批量插入
+//	if _, err := tx.ExecContext(ctx, query, allValues...); err != nil {
+//		return fmt.Errorf("插入日志失败: %w", err)
+//	}
+//
+//	// 提交事务
+//	if err := tx.Commit(); err != nil {
+//		return fmt.Errorf("提交事务失败: %w", err)
+//	}
+//
+//	return nil
+//}
+
+func printQuery(query string, values []interface{}) string {
+	return fmt.Sprintf("Executing query: %s with values: %v", query, values)
 }
 
 // CountLogs 统计日志数量

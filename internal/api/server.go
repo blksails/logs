@@ -76,6 +76,7 @@ func (s *Server) setupRoutes() {
 	// 日志相关路由
 	s.router.POST("/api/v1/logs/:project/:table", s.insertLog)
 	s.router.POST("/api/v1/logs/:project/:table/batch", s.batchInsertLogs)
+	s.router.POST("/api/v1/test", s.test)
 }
 
 // createSchema 创建 schema
@@ -279,6 +280,8 @@ func (s *Server) insertLog(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("log数据", log)
+
 	// 插入日志
 	if err := s.storage.InsertLog(c.Request.Context(), project, table, log); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -286,6 +289,28 @@ func (s *Server) insertLog(c *gin.Context) {
 	}
 
 	c.Status(http.StatusCreated)
+}
+
+// insertLog 插入单条日志
+func (s *Server) test(c *gin.Context) {
+
+	log := &models.LogEntry{
+		Project:   "myapp",
+		Table:     "applogs",
+		Level:     "INFO",
+		Message:   "用户登录成功",
+		Timestamp: time.Now(),
+		IP:        "192.168.1.1",
+	}
+	err := s.storage.InsertLog(c.Request.Context(), "myapp", "applogs", log)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+	})
 }
 
 // batchInsertLogs 批量插入日志
