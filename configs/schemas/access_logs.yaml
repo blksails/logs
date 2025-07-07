@@ -1,0 +1,36 @@
+project: "web"
+table: "access_logs"
+description: "浏览器访问日志示例配置"
+version: "1.0"
+fields:
+  - name: "level"
+    type: "string"
+    description: "日志级别"
+    required: true
+    indexed: true
+    example: "info"
+
+  - name: "message"
+    type: "string"
+    description: "日志消息"
+    required: true
+    indexed: false
+
+  - name: "ua"
+    type: "string"
+    description: "用户代理"
+    required: true
+    indexed: true
+
+  - name: "referer"
+    type: "string"
+    description: "引用页面URL"
+    required: false
+    indexed: false
+    example: "https://example.com/home"
+
+  - name: "rest"
+    type: "rest"
+    description: "其他动态字段"
+    required: false
+    indexed: false

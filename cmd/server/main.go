@@ -102,6 +102,7 @@ func initializeStorage(storageType string) (storage.Storage, error) {
 			Database: viper.GetString("storage.postgres.database"),
 			Username: viper.GetString("storage.postgres.user"),
 			Password: viper.GetString("storage.postgres.password"),
+			Schema:   viper.GetString("storage.postgres.schema"),
 		},
 		MySQL: storage.MySQLConfig{
 			Host:     viper.GetString("storage.mysql.host"),

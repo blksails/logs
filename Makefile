@@ -13,7 +13,7 @@ build:
 	$(GO) build $(GOFLAGS) $(LDFLAGS) -o bin/$(BINARY_NAME) ./cmd/server
 
 build-linux:
-	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS) $(LDFLAGS) -o bin/$(BINARY_NAME)-linux ./cmd/server
+	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS) $(LDFLAGS) -o bin/$(BINARY_NAME)-linux-amd64 ./cmd/server
 
 # 运行测试
 test:
@@ -55,6 +55,9 @@ clean:
 # 创建数据库表
 migrate:
 	psql -U postgres -d logs -f scripts/schema.sql
+
+deploy: build-linux
+	@scripts/deploy.sh
 
 # 帮助信息
 help:

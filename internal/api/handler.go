@@ -41,12 +41,16 @@ func (h *Handler) handleLog(c *gin.Context) {
 		timestamp = *req.Timestamp
 	}
 
+	// get ip from request
+	ip := c.ClientIP()
+
 	log := &models.LogEntry{
 		Project:   req.Project,
 		Table:     req.Table,
 		Level:     req.Level,
 		Message:   req.Message,
 		Timestamp: timestamp,
+		IP:        ip,
 		Fields:    req.Fields,
 		Tags:      req.Tags,
 	}

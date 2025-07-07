@@ -14,6 +14,7 @@ type LogEntry struct {
 	Level     string                 `json:"level"`
 	Message   string                 `json:"message"`
 	Timestamp time.Time              `json:"timestamp"`
+	IP        string                 `json:"ip"`
 	Fields    map[string]interface{} `json:"fields"`
 	Tags      map[string]string      `json:"tags"`
 }

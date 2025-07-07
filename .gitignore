@@ -56,4 +56,5 @@ config.prod.yaml
 
 # Debug files
 debug
-__debug_bin 
+__debug_bin
+server

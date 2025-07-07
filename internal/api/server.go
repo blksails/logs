@@ -192,6 +192,7 @@ func (s *Server) deserializeLogEntry(c *gin.Context, project, table string, rawD
 		Project:   project,
 		Table:     table,
 		Timestamp: time.Now(),
+		IP:        c.ClientIP(),
 		Fields:    make(map[string]interface{}),
 	}
 

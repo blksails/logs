@@ -13,8 +13,12 @@ fi
 
 ssh $SERVER "mkdir -p $DEST"
 scp -C bin/$APPNAME $SERVER:$DEST
-scp -r -C bin/configs  $SERVER:$DEST/configs
-# ssh $SERVER "sudo dnf config-manager --add-repo=https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo"
-# ssh $SERVER "sudo dnf -y install dnf-plugin-releasever-adapter --repo alinux3-plus"
-# ssh $SERVER "sudo dnf -y install docker-ce --nobest"
+scp -r ./configs  $SERVER:$DEST/configs
+scp scripts/logs.service $SERVER:$DEST
+
+# Install and enable the service
+ssh $SERVER "sudo cp $DEST/logs.service /etc/systemd/system/ && \
+    sudo systemctl daemon-reload && \
+    sudo systemctl enable logs.service && \
+    sudo systemctl restart logs.service"
 

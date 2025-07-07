@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -79,7 +80,7 @@ func (s *PostgresStorage) Initialize(ctx context.Context) error {
 
 // createLogsSchema 创建 logs schema
 func (s *PostgresStorage) createLogsSchema(ctx context.Context) error {
-	query := `CREATE SCHEMA IF NOT EXISTS ` + s.schema
+	query := `CREATE SCHEMA IF NOT EXISTS ` + quote(s.schema)
 	if _, err := s.db.ExecContext(ctx, query); err != nil {
 		return fmt.Errorf("创建 logs schema 失败: %w", err)
 	}
@@ -88,7 +89,7 @@ func (s *PostgresStorage) createLogsSchema(ctx context.Context) error {
 
 // setSearchPath 设置默认 search_path
 func (s *PostgresStorage) setSearchPath(ctx context.Context) error {
-	query := `SET search_path TO ` + s.schema
+	query := `SET search_path TO ` + quote(s.schema)
 	if _, err := s.db.ExecContext(ctx, query); err != nil {
 		return fmt.Errorf("设置 search_path 失败: %w", err)
 	}
@@ -203,14 +204,34 @@ func (s *PostgresStorage) GetSchema(ctx context.Context, project, table string) 
 // createLogTable 创建日志表
 func (s *PostgresStorage) createLogTable(ctx context.Context, schema *models.Schema) error {
 	// 构建表名
-	tableName := fmt.Sprintf("%s.%s_%s", s.schema, schema.Project, schema.Table)
+	tableName := fmt.Sprintf("%s.%s_%s", quote(s.schema), schema.Project, schema.Table)
 
-	// 构建字段定义
+	// 构建基础字段定义
 	columns := []string{
 		"id SERIAL PRIMARY KEY",
 		"project VARCHAR(255)",
 		"table_name VARCHAR(255)",
 		"timestamp TIMESTAMP WITH TIME ZONE",
+	}
+
+	// 默认字段列表
+	defaultFields := map[string]string{
+		"level":   "VARCHAR(50)",
+		"message": "TEXT",
+		"ip":      "VARCHAR(45)",
+	}
+
+	// 检查schema中是否已定义默认字段，如果没有则添加
+	schemaFieldNames := make(map[string]bool)
+	for _, field := range schema.Fields {
+		schemaFieldNames[field.Name] = true
+	}
+
+	// 添加未在schema中定义的默认字段
+	for fieldName, fieldType := range defaultFields {
+		if !schemaFieldNames[fieldName] {
+			columns = append(columns, fmt.Sprintf("%s %s", fieldName, fieldType))
+		}
 	}
 
 	// 添加自定义字段
@@ -359,27 +380,33 @@ func (s *PostgresStorage) BatchInsertLogs(ctx context.Context, project, table st
 	defer tx.Rollback()
 
 	// 构建表名
-	tableName := fmt.Sprintf("%s.%s_%s", s.schema, project, table)
+	tableName := fmt.Sprintf("%s.%s_%s", quote(s.schema), project, table)
 
 	// 准备字段列表
 	var columns []string
 	// 添加基础字段
-	columns = append(columns, "project", "table_name", "timestamp", "level", "message")
+	columns = append(columns, "project", "table_name", "timestamp")
+
+	// 默认字段列表
+	defaultFieldNames := []string{"level", "message", "ip"}
+
+	// 检查schema中是否已定义默认字段
+	schemaFieldNames := make(map[string]bool)
+	for _, field := range schema.Fields {
+		schemaFieldNames[field.Name] = true
+	}
+
+	// 添加未在schema中定义的默认字段
+	for _, fieldName := range defaultFieldNames {
+		if !schemaFieldNames[fieldName] {
+			columns = append(columns, fieldName)
+		}
+	}
 
 	// 添加自定义字段
 	for _, field := range schema.Fields {
 		if field.Type != models.FieldTypeRest {
-			// 检查字段是否已经存在
-			exists := false
-			for _, col := range columns {
-				if col == field.Name {
-					exists = true
-					break
-				}
-			}
-			if !exists {
-				columns = append(columns, field.Name)
-			}
+			columns = append(columns, field.Name)
 		}
 	}
 
@@ -400,47 +427,57 @@ func (s *PostgresStorage) BatchInsertLogs(ctx context.Context, project, table st
 		placeholders := make([]string, 0, len(columns))
 		paramCount := 1
 
-		// 添加基础字段的值
-		values = append(values, log.Project, log.Table, log.Timestamp, log.Level, log.Message)
-		for i := 0; i < 5; i++ {
+		// 处理所有字段
+		for _, col := range columns {
+			var value interface{}
+
+			// 根据字段名获取对应的值
+			switch col {
+			case "project":
+				value = log.Project
+			case "table_name":
+				value = log.Table
+			case "timestamp":
+				value = log.Timestamp
+			case "level":
+				value = log.Level
+			case "message":
+				value = log.Message
+			case "ip":
+				value = log.IP
+			default:
+				// 处理自定义字段
+				if restField != nil && col == restField.Name {
+					// 处理 Rest 字段
+					if restValue, ok := log.Fields[restField.Name]; ok {
+						// 将 Rest 字段转换为 JSON 字符串
+						jsonBytes, err := json.Marshal(restValue)
+						if err != nil {
+							return fmt.Errorf("序列化 Rest 字段失败: %w", err)
+						}
+						value = string(jsonBytes)
+					} else {
+						value = "{}"
+					}
+				} else if fieldValue, ok := log.Fields[col]; ok {
+					// 如果是 map 类型，转换为 JSON 字符串
+					if m, ok := fieldValue.(map[string]interface{}); ok {
+						jsonBytes, err := json.Marshal(m)
+						if err != nil {
+							return fmt.Errorf("序列化字段 %s 失败: %w", col, err)
+						}
+						value = string(jsonBytes)
+					} else {
+						value = fieldValue
+					}
+				} else {
+					value = nil
+				}
+			}
+
+			values = append(values, value)
 			placeholders = append(placeholders, fmt.Sprintf("$%d", paramCount))
 			paramCount++
-		}
-
-		// 处理已定义的字段
-		for _, col := range columns[5:] { // 跳过基础字段
-			if col == restField.Name {
-				// 处理 Rest 字段
-				if restValue, ok := log.Fields[restField.Name]; ok {
-					// 将 Rest 字段转换为 JSON 字符串
-					jsonBytes, err := json.Marshal(restValue)
-					if err != nil {
-						return fmt.Errorf("序列化 Rest 字段失败: %w", err)
-					}
-					values = append(values, string(jsonBytes))
-				} else {
-					values = append(values, "{}")
-				}
-				placeholders = append(placeholders, fmt.Sprintf("$%d", paramCount))
-				paramCount++
-			} else if value, ok := log.Fields[col]; ok {
-				// 如果是 map 类型，转换为 JSON 字符串
-				if m, ok := value.(map[string]interface{}); ok {
-					jsonBytes, err := json.Marshal(m)
-					if err != nil {
-						return fmt.Errorf("序列化字段 %s 失败: %w", col, err)
-					}
-					values = append(values, string(jsonBytes))
-				} else {
-					values = append(values, value)
-				}
-				placeholders = append(placeholders, fmt.Sprintf("$%d", paramCount))
-				paramCount++
-			} else {
-				values = append(values, nil)
-				placeholders = append(placeholders, fmt.Sprintf("$%d", paramCount))
-				paramCount++
-			}
 		}
 
 		query := fmt.Sprintf(`
@@ -498,7 +535,7 @@ func (s *PostgresStorage) DeleteSchema(ctx context.Context, project, table strin
 	}
 
 	// 删除日志表
-	tableName := fmt.Sprintf("%s.%s_%s", s.schema, project, table)
+	tableName := fmt.Sprintf("%s.%s_%s", quote(s.schema), project, table)
 	dropQuery := fmt.Sprintf("DROP TABLE IF EXISTS %s", tableName)
 	if _, err := tx.ExecContext(ctx, dropQuery); err != nil {
 		return fmt.Errorf("删除日志表失败: %w", err)
@@ -513,3 +550,7 @@ func (s *PostgresStorage) DeleteSchema(ctx context.Context, project, table strin
 }
 
 var _ Storage = (*PostgresStorage)(nil)
+
+func quote(s string) string {
+	return strconv.Quote(s)
+}
