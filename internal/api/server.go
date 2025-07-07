@@ -270,6 +270,8 @@ func (s *Server) insertLog(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("rawData", rawData)
+
 	// 反序列化日志条目
 	log, err := s.deserializeLogEntry(c, project, table, rawData)
 	if err != nil {

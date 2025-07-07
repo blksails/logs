@@ -25,11 +25,11 @@ storage:
 
   # ClickHouse 配置
   clickhouse:
-    host: "localhost"
+    host: "175.6.27.94"
     port: 9000
     database: "logs"
-    user: "default"
-    password: ""
+    user: "admin"
+    password: "hnidc0611cn"
 
   # MySQL 配置
   mysql:

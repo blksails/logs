@@ -25,7 +25,7 @@ var (
 func init() {
 	flag.StringVar(&configFile, "config", "configs/config.yaml", "配置文件路径")
 	flag.StringVar(&schemasDir, "schemas", "configs/schemas", "Schema 配置目录")
-	flag.StringVar(&storageType, "storage", "postgres", "存储后端类型 (postgres, mysql, sqlite, clickhouse)")
+	flag.StringVar(&storageType, "storage", "clickhouse", "存储后端类型 (postgres, mysql, sqlite, clickhouse)")
 }
 
 func main() {
@@ -47,6 +47,7 @@ func main() {
 		log.Fatalf("创建 schema 目录失败: %v", err)
 	}
 
+	log.Println("storageType", storageType)
 	// 初始化存储后端
 	store, err := initializeStorage(storageType)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/ClickHouse/clickhouse-go/v2"
 	"pkg.blksails.net/logs/internal/models"
 )
 
