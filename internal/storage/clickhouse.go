@@ -79,6 +79,9 @@ func (s *ClickHouseStorage) CreateSchema(ctx context.Context, schema *models.Sch
 		return fmt.Errorf("序列化字段失败: %w", err)
 	}
 
+	// 将字节数组转换为字符串
+	fieldsJSONString := string(fieldsJSON)
+
 	// 创建日志表
 	if err := s.createLogTable(ctx, schema); err != nil {
 		return err
@@ -93,7 +96,7 @@ func (s *ClickHouseStorage) CreateSchema(ctx context.Context, schema *models.Sch
 		schema.Project,
 		schema.Table,
 		schema.Description,
-		fieldsJSON,
+		fieldsJSONString,
 		schema.CreatedAt,
 		schema.UpdatedAt,
 	)
