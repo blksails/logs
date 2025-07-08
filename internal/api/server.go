@@ -263,6 +263,10 @@ func (s *Server) deserializeLogEntry(c *gin.Context, project, table string, rawD
 func (s *Server) insertLog(c *gin.Context) {
 	project := c.Param("project")
 	table := c.Param("table")
+	XJA4 := c.GetHeader("X-JA4")              // 获取 X-JA4 头
+	XJA4String := c.GetHeader("X-JA4-String") // 获取 X-JA4-String 头
+	fmt.Println("XJA4", XJA4)
+	fmt.Println("XJA4String", XJA4String)
 
 	// 解析请求数据
 	var rawData map[string]interface{}
