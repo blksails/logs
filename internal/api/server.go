@@ -267,9 +267,6 @@ func (s *Server) insertLog(c *gin.Context) {
 	XJA4String := c.GetHeader("X-JA4-String") // 获取 X-JA4-String 头
 	fmt.Println("XJA4", XJA4)
 	fmt.Println("XJA4String", XJA4String)
-	// 存入 context
-	c.Set("XJA4", XJA4)
-	c.Set("XJA4String", XJA4String)
 
 	// 解析请求数据
 	var rawData map[string]interface{}
@@ -286,6 +283,10 @@ func (s *Server) insertLog(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	// 新增：插入 XJA4 和 XJA4String 字段
+	log.Fields["XJA4"] = XJA4
+	log.Fields["XJA4String"] = XJA4String
 
 	fmt.Println("log数据", log)
 
@@ -341,6 +342,9 @@ func (s *Server) batchInsertLogs(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		// 新增：插入 XJA4 和 XJA4String 字段
+		log.Fields["XJA4"] = c.GetHeader("X-JA4")
+		log.Fields["XJA4String"] = c.GetHeader("X-JA4-String")
 		logs = append(logs, log)
 	}
 
