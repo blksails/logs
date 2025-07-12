@@ -287,7 +287,7 @@ func (s *Server) insertLog(c *gin.Context) {
 	// 新增：插入 XJA4 和 XJA4String 字段
 	log.Fields["XJA4"] = XJA4
 	log.Fields["XJA4String"] = XJA4String
-
+	log.Fields["ip"] = c.ClientIP()
 	fmt.Println("log数据", log)
 
 	// 插入日志
@@ -345,6 +345,7 @@ func (s *Server) batchInsertLogs(c *gin.Context) {
 		// 新增：插入 XJA4 和 XJA4String 字段
 		log.Fields["XJA4"] = c.GetHeader("X-JA4")
 		log.Fields["XJA4String"] = c.GetHeader("X-JA4-String")
+		log.Fields["ip"] = c.ClientIP()
 		logs = append(logs, log)
 	}
 
