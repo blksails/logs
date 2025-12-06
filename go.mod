@@ -1,6 +1,6 @@
 module pkg.blksails.net/logs
 
-go 1.23.0
+go 1.19
 
 toolchain go1.23.3
 

@@ -1,0 +1,22 @@
+schedule: "*/30 * * * *"
+
+tasks:
+  - name: add
+    cmd: git add .
+    run_if_git_dirty: true
+
+  - name: commit
+    cmd: >
+      MSG=$(git diff --cached |
+      sgpt "总结这次 git commit 的主要内容，使用 conventionalcommits 风格
+      <type>(<scope>): <subject>
+
+      <body>
+
+      <footer>，使用中文回答") &&
+      git commit -m "$MSG"
+    run_if_git_dirty: true
+
+  - name: push
+    cmd: git push -u origin $(git branch --show-current)
+    run_if_git_dirty: false
